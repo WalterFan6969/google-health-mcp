@@ -1,0 +1,51 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "google-health-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "migrations": [
+    {
+      "new_sqlite_classes": ["GoogleHealthMCP"],
+      "tag": "v1"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "GoogleHealthMCP",
+        "name": "MCP_OBJECT"
+      }
+    ]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      // Replace with the id printed by: wrangler kv namespace create OAUTH_KV
+      "id": "12fbad26ad884866916536d0602a8a40"
+    },
+    {
+      // Caches immutable past-day API responses. Created via:
+      //   wrangler kv namespace create HEALTH_CACHE
+      "binding": "HEALTH_CACHE",
+      "id": "248776dbc055461a9430cbaa1021938b"
+    }
+  ],
+  "vars": {
+    // Default Health API scopes requested from Google (read-only recovery data).
+    // ecg/irn cover get_cardiac_events; remove them here if you don't want to
+    // grant those, and that tool will simply return a permission error.
+    "GOOGLE_OAUTH_SCOPES": "https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly https://www.googleapis.com/auth/googlehealth.sleep.readonly https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly https://www.googleapis.com/auth/googlehealth.nutrition.readonly",
+    // Public origin of this Worker; used for the connector icon/website advertised to MCP clients.
+    "PUBLIC_URL": "https://google-health-mcp.dandubman1.workers.dev",
+    // IANA timezone used to resolve "today"/"last night" for date defaults.
+    "TIME_ZONE": "Asia/Jerusalem"
+  }
+  // Secrets (set via `wrangler secret put`):
+  //   GOOGLE_CLIENT_ID
+  //   GOOGLE_CLIENT_SECRET
+  //   COOKIE_ENCRYPTION_KEY   (any long random string)
+}
